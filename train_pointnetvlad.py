@@ -19,14 +19,12 @@ from tensorboardX import SummaryWriter
 from torch.autograd import Variable
 from torch.backends import cudnn
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
-
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("Training on device:", device)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
-
-
-
 cudnn.enabled = True
 
 parser = argparse.ArgumentParser()
@@ -37,10 +35,10 @@ parser.add_argument('--positives_per_query', type=int, default=2,
                     help='Number of potential positives in each training tuple [default: 2]')
 parser.add_argument('--negatives_per_query', type=int, default=18,
                     help='Number of definite negatives in each training tuple [default: 18]')
-parser.add_argument('--max_epoch', type=int, default=20,
-                    help='Epoch to run [default: 20]')
-parser.add_argument('--batch_num_queries', type=int, default=2,
-                    help='Batch Size during training [default: 2]')
+parser.add_argument('--max_epoch', type=int, default=10,
+                    help='Epoch to run [default: 10]')
+parser.add_argument('--batch_num_queries', type=int, default=8,
+                    help='Batch Size during training [default: 8]')
 parser.add_argument('--learning_rate', type=float, default=0.000005,
                     help='Initial learning rate [default: 0.000005]')
 parser.add_argument('--momentum', type=float, default=0.9,
@@ -115,8 +113,6 @@ HARD_NEGATIVES = {}
 TRAINING_LATENT_VECTORS = []
 
 TOTAL_ITERATIONS = 0
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def get_bn_decay(batch):

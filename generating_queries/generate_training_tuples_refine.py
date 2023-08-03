@@ -1,10 +1,13 @@
 import os
 import pickle
 import random
-
+import sys
 import numpy as np
 import pandas as pd
 from sklearn.neighbors import KDTree
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(BASE_DIR))
+import config as cfg
 
 #####For training and test data split#####
 x_width = 150

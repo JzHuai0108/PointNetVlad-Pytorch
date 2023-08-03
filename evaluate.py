@@ -4,7 +4,6 @@ import numpy as np
 import socket
 import importlib
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 import sys
 import torch
 import torch.nn as nn
@@ -27,14 +26,14 @@ import config as cfg
 cudnn.enabled = True
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+print("Evaluate with device: {}".format(device))
 
 def evaluate():
     model = PNV.PointNetVlad(global_feat=True, feature_transform=True, max_pool=False,
                                       output_dim=cfg.FEATURE_OUTPUT_DIM, num_points=cfg.NUM_POINTS)
     model = model.to(device)
 
-    resume_filename = cfg.LOG_DIR + "checkpoint.pth.tar"
+    resume_filename = cfg.LOG_DIR + cfg.MODEL_FILENAME
     print("Resuming From ", resume_filename)
     checkpoint = torch.load(resume_filename)
     saved_state_dict = checkpoint['state_dict']
@@ -208,6 +207,7 @@ def get_recall(m, n, DATABASE_VECTORS, QUERY_VECTORS, QUERY_SETS):
 if __name__ == "__main__":
     # params
     parser = argparse.ArgumentParser()
+    parser.add_argument('--log_dir', default='log/', help='Log dir [default: log/]')
     parser.add_argument('--positives_per_query', type=int, default=4,
                         help='Number of potential positives in each training tuple [default: 2]')
     parser.add_argument('--negatives_per_query', type=int, default=12,
@@ -239,7 +239,7 @@ if __name__ == "__main__":
     cfg.EVAL_DATABASE_FILE = 'generating_queries/oxford_evaluation_database.pickle'
     cfg.EVAL_QUERY_FILE = 'generating_queries/oxford_evaluation_query.pickle'
 
-    cfg.LOG_DIR = 'log/'
+    cfg.LOG_DIR = FLAGS.log_dir
     cfg.OUTPUT_FILE = cfg.RESULTS_FOLDER + 'results.txt'
     cfg.MODEL_FILENAME = "model.ckpt"
 
