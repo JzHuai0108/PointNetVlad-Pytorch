@@ -65,10 +65,13 @@ def construct_query_and_database_sets(base_path, runs_folder, folders, pointclou
         for index, row in df_locations.iterrows():
             # entire business district is in the test set
             if(output_name == "business"):
-                df_test = df_test.append(row, ignore_index=True)
+                # df_test = df_test.append(row, ignore_index=True)
+                df_test = pd.concat([df_test, pd.DataFrame.from_records([row])], ignore_index=True)
             elif(check_in_test_set(row['northing'], row['easting'], p, x_width, y_width)):
-                df_test = df_test.append(row, ignore_index=True)
-            df_database = df_database.append(row, ignore_index=True)
+                # df_test = df_test.append(row, ignore_index=True)
+                df_test = pd.concat([df_test, pd.DataFrame.from_records([row])], ignore_index=True)
+            # df_database = df_database.append(row, ignore_index=True)
+            df_database = pd.concat([df_database, pd.DataFrame.from_records([row])], ignore_index=True)
 
         database_tree = KDTree(df_database[['northing','easting']])
         test_tree = KDTree(df_test[['northing','easting']])
@@ -121,7 +124,7 @@ base_path = cfg.DATASET_FOLDER
 # For Oxford
 folders = []
 runs_folder = "oxford/"
-all_folders = sorted(os.listdir(os.path.join(BASE_DIR,base_path,runs_folder)))
+all_folders = sorted(os.listdir(os.path.join(base_path,runs_folder)))
 index_list = [5,6,7,9,10,11,12,13,14,15,16,17,18,19,22,24,31,32,33,38,39,43,44]
 print(len(index_list))
 for index in index_list:
@@ -134,7 +137,7 @@ construct_query_and_database_sets(base_path, runs_folder, folders, "/pointcloud_
 # For University Sector
 folders = []
 runs_folder = "inhouse_datasets/"
-all_folders = sorted(os.listdir(os.path.join(BASE_DIR,base_path,runs_folder)))
+all_folders = sorted(os.listdir(os.path.join(base_path,runs_folder)))
 uni_index = range(10,15)
 for index in uni_index:
     folders.append(all_folders[index])
@@ -146,7 +149,7 @@ construct_query_and_database_sets(base_path, runs_folder, folders, "/pointcloud_
 # For Residential Area
 folders = []
 runs_folder = "inhouse_datasets/"
-all_folders = sorted(os.listdir(os.path.join(BASE_DIR,base_path,runs_folder)))
+all_folders = sorted(os.listdir(os.path.join(base_path,runs_folder)))
 res_index = range(5,10)
 for index in res_index:
     folders.append(all_folders[index])
@@ -158,7 +161,7 @@ construct_query_and_database_sets(base_path, runs_folder, folders, "/pointcloud_
 # For Business District
 folders = []
 runs_folder = "inhouse_datasets/"
-all_folders = sorted(os.listdir(os.path.join(BASE_DIR,base_path,runs_folder)))
+all_folders = sorted(os.listdir(os.path.join(base_path,runs_folder)))
 bus_index = range(5)
 for index in bus_index:
     folders.append(all_folders[index])

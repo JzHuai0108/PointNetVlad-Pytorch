@@ -29,7 +29,7 @@ python generate_test_sets.py
 
 ### Train
 ```
-python train_pointnetvlad.py --dataset_folder $DATASET_FOLDER
+python train_pointnetvlad.py --dataset_folder $DATASET_FOLDER --log_dir $LOG_DIR
 ```
 
 ### Evaluate

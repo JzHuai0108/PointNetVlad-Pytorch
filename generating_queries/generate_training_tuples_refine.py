@@ -2,6 +2,8 @@ import os
 import pickle
 import random
 import sys
+import tqdm
+
 import numpy as np
 import pandas as pd
 from sklearn.neighbors import KDTree
@@ -70,7 +72,7 @@ runs_folder = "inhouse_datasets/"
 filename = "pointcloud_centroids_10.csv"
 pointcloud_fols = "/pointcloud_25m_10/"
 
-all_folders = sorted(os.listdir(os.path.join(BASE_DIR,base_path,runs_folder)))
+all_folders = sorted(os.listdir(os.path.join(base_path,runs_folder)))
 
 folders = []
 index_list = range(5,15)
@@ -82,7 +84,7 @@ print(folders)
 # Initialize pandas DataFrame
 df_train = pd.DataFrame(columns=['file','northing','easting'])
 
-for folder in folders:
+for folder in tqdm.tqdm(folders):
     df_locations = pd.read_csv(os.path.join(
         base_path, runs_folder, folder,filename),sep=',')
     df_locations['timestamp'] = runs_folder+folder + \
@@ -92,7 +94,8 @@ for folder in folders:
         if(check_in_test_set(row['northing'], row['easting'], p, x_width, y_width)):
             continue
         else:
-            df_train = df_train.append(row, ignore_index=True)
+            # df_train = df_train.append(row, ignore_index=True)
+            df_train = pd.concat([df_train, pd.DataFrame.from_records([row])], ignore_index=True)
 
 print(len(df_train['file']))
 
@@ -102,7 +105,7 @@ runs_folder = "oxford/"
 filename = "pointcloud_locations_20m_10overlap.csv"
 pointcloud_fols = "/pointcloud_20m_10overlap/"
 
-all_folders = sorted(os.listdir(os.path.join(BASE_DIR,base_path,runs_folder)))
+all_folders = sorted(os.listdir(os.path.join(base_path,runs_folder)))
 
 folders = []
 index_list = range(len(all_folders)-1)
@@ -111,7 +114,7 @@ for index in index_list:
 
 print(folders)
 
-for folder in folders:
+for folder in tqdm.tqdm(folders):
     df_locations = pd.read_csv(os.path.join(
         base_path,runs_folder,folder,filename),sep=',')
     df_locations['timestamp'] = runs_folder+folder + \
@@ -121,7 +124,8 @@ for folder in folders:
         if(check_in_test_set(row['northing'], row['easting'], p, x_width, y_width)):
             continue
         else:
-            df_train = df_train.append(row, ignore_index=True)
+            # df_train = df_train.append(row, ignore_index=True)
+            df_train = pd.concat([df_train, pd.DataFrame.from_records([row])], ignore_index=True)
 
 print("Number of training submaps: "+str(len(df_train['file'])))
 construct_query_dict(df_train,"training_queries_refine.pickle")

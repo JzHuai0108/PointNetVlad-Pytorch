@@ -2,6 +2,7 @@ import os
 import pickle
 import random
 import sys
+import tqdm
 
 import numpy as np
 import pandas as pd
@@ -17,7 +18,7 @@ runs_folder = "oxford/"
 filename = "pointcloud_locations_20m_10overlap.csv"
 pointcloud_fols = "/pointcloud_20m_10overlap/"
 
-all_folders = sorted(os.listdir(os.path.join(BASE_DIR,base_path,runs_folder)))
+all_folders = sorted(os.listdir(os.path.join(base_path,runs_folder)))
 
 folders = []
 
@@ -72,7 +73,7 @@ def construct_query_dict(df_centroids, filename):
 df_train = pd.DataFrame(columns=['file','northing','easting'])
 df_test = pd.DataFrame(columns=['file','northing','easting'])
 
-for folder in folders:
+for folder in tqdm.tqdm(folders):
     df_locations = pd.read_csv(os.path.join(
         base_path,runs_folder,folder,filename),sep=',')
     df_locations['timestamp'] = runs_folder+folder + \
@@ -81,9 +82,11 @@ for folder in folders:
 
     for index, row in df_locations.iterrows():
         if(check_in_test_set(row['northing'], row['easting'], p, x_width, y_width)):
-            df_test = df_test.append(row, ignore_index=True)
+            # df_test = df_test.append(row, ignore_index=True)
+            df_test = pd.concat([df_test, pd.DataFrame.from_records([row])], ignore_index=True)
         else:
-            df_train = df_train.append(row, ignore_index=True)
+            # df_train = df_train.append(row, ignore_index=True)
+            df_train = pd.concat([df_train, pd.DataFrame.from_records([row])], ignore_index=True)
 
 print("Number of training submaps: "+str(len(df_train['file'])))
 print("Number of non-disjoint test submaps: "+str(len(df_test['file'])))
