@@ -51,7 +51,7 @@ def construct_query_dict(df_centroids, filename):
     ind_r = tree.query_radius(df_centroids[['northing','easting']], r=50)
     queries = {}
     print(len(ind_nn))
-    for i in range(len(ind_nn)):
+    for i in tqdm.tqdm(range(len(ind_nn))):
         query = df_centroids.iloc[i]["file"]
         positives = np.setdiff1d(ind_nn[i],[i]).tolist()
         negatives = np.setdiff1d(

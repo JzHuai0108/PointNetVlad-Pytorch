@@ -244,6 +244,7 @@ class PointNetVlad(nn.Module):
     def forward(self, x):
         x = self.point_net(x)
         x = self.net_vlad(x)
+        x = F.normalize(x)
         return x
 
 

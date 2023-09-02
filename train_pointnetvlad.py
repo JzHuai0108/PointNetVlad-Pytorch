@@ -38,7 +38,7 @@ parser.add_argument('--negatives_per_query', type=int, default=18,
 parser.add_argument('--max_epoch', type=int, default=10,
                     help='Epoch to run [default: 10]')
 parser.add_argument('--batch_num_queries', type=int, default=8,
-                    help='Batch Size during training [default: 8]')
+                    help='Batch Size during training [default: %(default)s]')
 parser.add_argument('--learning_rate', type=float, default=0.000005,
                     help='Initial learning rate [default: 0.000005]')
 parser.add_argument('--momentum', type=float, default=0.9,
@@ -186,7 +186,6 @@ def train():
     LOG_FOUT.flush()
 
     for epoch in range(starting_epoch, cfg.MAX_EPOCH):
-        print(epoch)
         print()
         log_string('**** EPOCH %03d ****' % (epoch))
         sys.stdout.flush()
