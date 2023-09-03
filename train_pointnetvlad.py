@@ -35,7 +35,7 @@ parser.add_argument('--positives_per_query', type=int, default=2,
                     help='Number of potential positives in each training tuple [default: 2]')
 parser.add_argument('--negatives_per_query', type=int, default=18,
                     help='Number of definite negatives in each training tuple [default: 18]')
-parser.add_argument('--max_epoch', type=int, default=10,
+parser.add_argument('--max_epoch', type=int, default=20,
                     help='Epoch to run [default: 10]')
 parser.add_argument('--batch_num_queries', type=int, default=8,
                     help='Batch Size during training [default: %(default)s]')
@@ -87,7 +87,7 @@ cfg.TRIPLET_USE_BEST_POSITIVES = FLAGS.triplet_use_best_positives
 cfg.LOSS_LAZY = FLAGS.loss_not_lazy
 cfg.LOSS_IGNORE_ZERO_BATCH = FLAGS.loss_ignore_zero_batch
 
-cfg.TRAIN_FILE = 'generating_queries/training_queries_baseline.pickle'
+cfg.TRAIN_FILE = 'generating_queries/training_queries_refine.pickle'
 cfg.TEST_FILE = 'generating_queries/test_queries_baseline.pickle'
 
 cfg.LOG_DIR = FLAGS.log_dir
@@ -167,7 +167,7 @@ def train():
         exit(0)
 
     if FLAGS.resume:
-        resume_filename = cfg.LOG_DIR + "checkpoint.pth.tar"
+        resume_filename = os.path.join(cfg.LOG_DIR, cfg.MODEL_FILENAME)
         print("Resuming From ", resume_filename)
         checkpoint = torch.load(resume_filename)
         saved_state_dict = checkpoint['state_dict']
@@ -326,7 +326,7 @@ def train_one_epoch(model, optimizer, train_writer, loss_function, epoch):
                 model_to_save = model.module
             else:
                 model_to_save = model
-            save_name = cfg.LOG_DIR + cfg.MODEL_FILENAME
+            save_name = os.path.join(cfg.LOG_DIR, cfg.MODEL_FILENAME)
             torch.save({
                 'epoch': epoch,
                 'iter': TOTAL_ITERATIONS,

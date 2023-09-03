@@ -33,7 +33,7 @@ def evaluate():
                                       output_dim=cfg.FEATURE_OUTPUT_DIM, num_points=cfg.NUM_POINTS)
     model = model.to(device)
 
-    resume_filename = cfg.LOG_DIR + cfg.MODEL_FILENAME
+    resume_filename = os.path.join(cfg.LOG_DIR, cfg.MODEL_FILENAME)
     print("Resuming From ", resume_filename)
     checkpoint = torch.load(resume_filename)
     saved_state_dict = checkpoint['state_dict']
