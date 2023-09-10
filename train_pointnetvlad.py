@@ -9,7 +9,8 @@ import numpy as np
 from sklearn.neighbors import KDTree, NearestNeighbors
 
 import config as cfg
-import evaluate
+# import evaluate
+import evaluate_radar as evaluate
 import loss.pointnetvlad_loss as PNV_loss
 import models.PointNetVlad as PNV
 import torch
@@ -69,7 +70,7 @@ parser.add_argument('--dataset_folder', default='../../dataset/',
 FLAGS = parser.parse_args()
 cfg.BATCH_NUM_QUERIES = FLAGS.batch_num_queries
 #cfg.EVAL_BATCH_SIZE = 12
-cfg.NUM_POINTS = 4096
+cfg.NUM_POINTS = 512
 cfg.TRAIN_POSITIVES_PER_QUERY = FLAGS.positives_per_query
 cfg.TRAIN_NEGATIVES_PER_QUERY = FLAGS.negatives_per_query
 cfg.MAX_EPOCH = FLAGS.max_epoch
@@ -87,8 +88,8 @@ cfg.TRIPLET_USE_BEST_POSITIVES = FLAGS.triplet_use_best_positives
 cfg.LOSS_LAZY = FLAGS.loss_not_lazy
 cfg.LOSS_IGNORE_ZERO_BATCH = FLAGS.loss_ignore_zero_batch
 
-cfg.TRAIN_FILE = 'generating_queries/training_queries_refine.pickle'
-cfg.TEST_FILE = 'generating_queries/test_queries_baseline.pickle'
+cfg.TRAIN_FILE = 'generating_queries/radar_split/training_queries_long_radar.pickle'
+# cfg.TEST_FILE = 'generating_queries/radar_split/evaluation_query_test_short_5m.pickle'
 
 cfg.LOG_DIR = FLAGS.log_dir
 if not os.path.exists(cfg.LOG_DIR):
@@ -102,7 +103,7 @@ cfg.DATASET_FOLDER = FLAGS.dataset_folder
 
 # Load dictionary of training queries
 TRAINING_QUERIES = get_queries_dict(cfg.TRAIN_FILE)
-TEST_QUERIES = get_queries_dict(cfg.TEST_FILE)
+# TEST_QUERIES = get_queries_dict(cfg.TEST_FILE)
 
 cfg.BN_INIT_DECAY = 0.5
 cfg.BN_DECAY_DECAY_RATE = 0.5
@@ -197,7 +198,7 @@ def train():
         eval_recall = evaluate.evaluate_model(model)
         log_string('EVAL RECALL: %s' % str(eval_recall))
 
-        train_writer.add_scalar("Val Recall", eval_recall, epoch)
+        train_writer.add_scalar("Val Recall", eval_recall[1], epoch)
 
 
 def train_one_epoch(model, optimizer, train_writer, loss_function, epoch):
