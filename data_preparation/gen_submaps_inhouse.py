@@ -147,7 +147,6 @@ if __name__ == '__main__':
 
                 submap_pc = submap_pc[np.linalg.norm(submap_pc[:, :3], axis=1) <= 200]
 
-
                 if len(submap_pc) < target_points:
                     additional_points = target_points - len(submap_pc)
                     sampled_points = submap_pc[np.random.choice(submap_pc.shape[0], additional_points), :]

@@ -66,7 +66,7 @@ def construct_query_and_database_sets(base_path, data_type, seqs, positive_dist,
 if __name__ == '__main__':
 
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    base_path = '/media/cyw/CYW-ZX2/radar_reloc_data/'
+    base_path = '/path/to/radar_reloc_data'
     save_folder = "./radar_split/"
 
     ######  for short range radar (coloradar, qinghua)  #####

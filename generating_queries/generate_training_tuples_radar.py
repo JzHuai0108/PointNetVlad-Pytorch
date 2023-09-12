@@ -13,7 +13,7 @@ from sklearn.neighbors import KDTree
 ##########################################
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-base_path = '/media/cyw/CYW-ZX2/radar_reloc_data/'
+base_path = '/path/to/radar_reloc_data'
 
 def construct_query_dict(df_centroids, seq_index, queries_len, positive_dis, negative_dis):
     tree = KDTree(df_centroids[['x', 'y']])

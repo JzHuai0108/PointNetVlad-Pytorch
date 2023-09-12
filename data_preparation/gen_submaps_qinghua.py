@@ -1,14 +1,10 @@
 # -*-coding:utf-8-*-
 import numpy as np
-from scipy.spatial.transform import Rotation
 from tqdm import tqdm
 import random
 import os
-import rosbag
-import sensor_msgs.point_cloud2 as pc2
 from test_slerp import *
 import open3d as o3d
-import re
 
 def load_qinghua_poses(xyz_path, yaw_path):
     trans = []
@@ -107,8 +103,7 @@ if __name__ == '__main__':
                         relative_pose = np.linalg.inv(poses[i]).dot(poses[j])
                         temp_pc_in_center = np.linalg.inv(poses[i]).dot(poses[j]).dot(neiscan_pc.T).T
                         submap_pc = np.concatenate((submap_pc, temp_pc_in_center), axis=0) if submap_pc.size else temp_pc_in_center
-                
-                submap_pc = submap_pc[np.linalg.norm(submap_pc[:, :3], axis=1) <= 200]
+
                 target_submap = random_down_sample(submap_pc[:, :3], target_points)
 
                 save_dir = os.path.join(save_path, save_folder, seq, tra)

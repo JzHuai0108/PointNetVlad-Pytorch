@@ -85,9 +85,8 @@ if __name__ == '__main__':
     radartopic = '/oculii_radar/point_cloud'
     sub_size = 3
     target_points = 512
-    seqs = ['RURAL_A0', 'RURAL_A1', 'RURAL_A2', 'RURAL_B0', 'RURAL_B1', 'RURAL_B2',]
-                    # 'RURAL_C0', 'RURAL_C1', 'RURAL_C2']
-    # seqs = ['RURAL_C0', 'RURAL_C1', 'RURAL_C2']
+    seqs = ['RURAL_A0', 'RURAL_A1', 'RURAL_A2', 'RURAL_B0', 'RURAL_B1', 'RURAL_B2'
+           'RURAL_C0', 'RURAL_C1', 'RURAL_C2']
 
     I_T_R = load_mscrad4r_calib(calib_path)
 
@@ -141,6 +140,8 @@ if __name__ == '__main__':
                 Rc_T_Rj = comput_trans(I_T_R, center_pose, interp_poses[j])
                 temp_pc_in_center = Rc_T_Rj.dot(temp_pc.T).T
                 submap_pc = np.concatenate((submap_pc, temp_pc_in_center), axis=0) if submap_pc.size else temp_pc_in_center
+
+            submap_pc = submap_pc[np.linalg.norm(submap_pc[:, :3], axis=1) <= 200]
 
             target_submap = random_down_sample(submap_pc[:, :3], target_points)
             ones = np.ones((target_submap.shape[0], 1))
