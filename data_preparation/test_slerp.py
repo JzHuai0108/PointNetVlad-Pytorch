@@ -18,12 +18,14 @@ def rot_slerp(q1, q2, t1, t2, t):
 
 
 def rot_slerp_batch(keytimes, keyquats, querytimes):
+    # This function requires that the querytimes are within the boundaries of the keytimes. Be careful calling this function.
     keyrots = Rotation.from_quat(keyquats)
     slerp = Slerp(keytimes, keyrots)
     interp_rots = slerp(querytimes)
     return interp_rots.as_quat()
 
 def pos_interpolate_batch(keytimes, keypositions, querytimes):
+    # This function will return the boundary values of keypositions if querytimes are out of the boundaries of keytimes.
     interp_positions = np.zeros((len(querytimes), 3))
     for i in range(keypositions.shape[1]):
         interp_positions[:, i] = np.interp(querytimes, keytimes, keypositions[:, i])

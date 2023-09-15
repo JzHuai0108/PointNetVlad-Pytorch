@@ -9,8 +9,6 @@ import numpy as np
 from sklearn.neighbors import KDTree, NearestNeighbors
 
 import config as cfg
-# import evaluate
-import evaluate_radar as evaluate
 import loss.pointnetvlad_loss as PNV_loss
 import models.PointNetVlad as PNV
 import torch
@@ -66,11 +64,19 @@ parser.add_argument('--resume', action='store_true',
                     help='If present, restore checkpoint and resume training')
 parser.add_argument('--dataset_folder', default='../../dataset/',
                     help='PointNetVlad Dataset Folder')
-
+parser.add_argument('--TRAIN_FILE', default='generating_queries/radar_split/training_queries_short_radar.pickle',
+                    help='PointNetVlad Dataset Folder')
+parser.add_argument('--NUM_POINTS', type=int, default=512, help='Number of points in a submap [default: 512]')
+parser.add_argument('--evaluate_type', type=int, default=1, help='0:evaluate for oxford, 1:evaluate for radar')
 FLAGS = parser.parse_args()
+
+if FLAGS.evaluate_type == 0:
+    import evaluate
+else:
+    import evaluate_radar as evaluate
+
 cfg.BATCH_NUM_QUERIES = FLAGS.batch_num_queries
-#cfg.EVAL_BATCH_SIZE = 12
-cfg.NUM_POINTS = 512
+cfg.NUM_POINTS = FLAGS.NUM_POINTS
 cfg.TRAIN_POSITIVES_PER_QUERY = FLAGS.positives_per_query
 cfg.TRAIN_NEGATIVES_PER_QUERY = FLAGS.negatives_per_query
 cfg.MAX_EPOCH = FLAGS.max_epoch
@@ -88,9 +94,6 @@ cfg.TRIPLET_USE_BEST_POSITIVES = FLAGS.triplet_use_best_positives
 cfg.LOSS_LAZY = FLAGS.loss_not_lazy
 cfg.LOSS_IGNORE_ZERO_BATCH = FLAGS.loss_ignore_zero_batch
 
-cfg.TRAIN_FILE = 'generating_queries/radar_split/training_queries_long_radar.pickle'
-# cfg.TEST_FILE = 'generating_queries/radar_split/evaluation_query_test_short_5m.pickle'
-
 cfg.LOG_DIR = FLAGS.log_dir
 if not os.path.exists(cfg.LOG_DIR):
     os.mkdir(cfg.LOG_DIR)
@@ -98,12 +101,11 @@ LOG_FOUT = open(os.path.join(cfg.LOG_DIR, 'log_train.txt'), 'w')
 LOG_FOUT.write(str(FLAGS) + '\n')
 
 cfg.RESULTS_FOLDER = FLAGS.results_dir
-
 cfg.DATASET_FOLDER = FLAGS.dataset_folder
 
 # Load dictionary of training queries
+cfg.TRAIN_FILE = FLAGS.TRAIN_FILE
 TRAINING_QUERIES = get_queries_dict(cfg.TRAIN_FILE)
-# TEST_QUERIES = get_queries_dict(cfg.TEST_FILE)
 
 cfg.BN_INIT_DECAY = 0.5
 cfg.BN_DECAY_DECAY_RATE = 0.5

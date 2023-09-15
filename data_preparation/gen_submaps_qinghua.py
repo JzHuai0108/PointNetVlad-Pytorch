@@ -1,10 +1,9 @@
 # -*-coding:utf-8-*-
 import numpy as np
 from tqdm import tqdm
-import random
 import os
-from test_slerp import *
-import open3d as o3d
+import argparse
+from tools import random_down_sample
 
 def load_qinghua_poses(xyz_path, yaw_path):
     trans = []
@@ -35,15 +34,6 @@ def load_qinghua_poses(xyz_path, yaw_path):
     return poses, yaws
 
 
-def random_down_sample(pc, sample_points):
-    submap_pcd = o3d.geometry.PointCloud()
-    submap_pcd.points = o3d.utility.Vector3dVector(pc[:, :3])
-    sampleA = random.sample(range(pc.shape[0]), sample_points)
-    sampled_cloud = submap_pcd.select_by_index(sampleA)
-    sampled_pc = np.array(sampled_cloud.points)
-    return sampled_pc
-
-
 def load_scans(scan_path):
     current_vertex = np.fromfile(scan_path, dtype=np.float32)
     current_vertex = current_vertex.reshape((-1, 4))
@@ -56,32 +46,42 @@ def load_scans(scan_path):
 
 
 if __name__ == '__main__':
-    data_path = '/path/to/radar_reloc_data/qinghua/'
-    save_path = '/path/to/radar_reloc_data/'
-    train_folder = 'train_short'
-    test_folder = 'test_short'
-    sub_size = 5
-    target_points = 512
-    seqs = ['seq1', 'seq2','seq3', 'seq4', 'seq5', 'seq7']
-    train_id = [1, 2, 5, 7]
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--data_path', type=str, default='/data/path/to/radar_reloc_data/',
+                        help='radar datasets path')
+    parser.add_argument('--dataset_name', type=str, default='qinghua', help='radar dataset folder')
+    parser.add_argument('--seqs', type=list, default=['seq1', 'seq2','seq3', 'seq4', 'seq5', 'seq7'],
+                        help='the groups name in the dataset')
+    parser.add_argument('--train_seqs', type=list, default=[1, 2, 5, 7], help='train seqs in the dataset')
+    parser.add_argument('--train_folder', type=str, default='train_short', help='train submaps saved folder')
+    parser.add_argument('--test_folder', type=str, default='test_short', help='test submaps saved folder')
+    parser.add_argument('--frame_winsize', type=int, default=5, help='window size for submap')
+    parser.add_argument('--target_points', type=int, default=512, help='traget points in saved submaps')
+    cfgs = parser.parse_args()
 
-    for seq in tqdm(seqs):
+    dataset_path = os.path.join(cfgs.data_path, cfgs.dataset_name)
+    calib_path = os.path.join(dataset_path, 'calib/base_to_single_chip.txt')
+
+    for seq in tqdm(cfgs.seqs):
         seq_id = int(seq[-1])
-        tra_folders = (os.listdir(os.path.join(data_path, seq)))
+        tra_folders = (os.listdir(os.path.join(dataset_path, seq)))
         for tra in tra_folders:
             tra_id = tra.split('-')[-1]
 
-            if seq_id in train_id:
-                save_folder = train_folder
-                gap_size = sub_size // 2
+            if seq_id in cfgs.train_seqs:
+                save_folder = cfgs.train_folder
+                gap_size = cfgs.frame_winsize // 2
             else:
-                save_folder = test_folder
+                save_folder = cfgs.test_folder
                 if tra_id == '1':
-                    gap_size = sub_size // 2
+                    gap_size = cfgs.frame_winsize // 2
                 else:
-                    gap_size = sub_size
+                    gap_size = cfgs.frame_winsize
 
-            tra_path = data_path + seq + "/" + tra
+            save_dir = os.path.join(cfgs.data_path, save_folder, seq, tra)
+            os.makedirs(save_dir, exist_ok=True)
+
+            tra_path = os.path.join(dataset_path, seq, tra)
             scans_path = tra_path + "/bins"
             xyz_path = tra_path + '/data_label.txt'
             yaw_path = tra_path + '/yaw.txt'
@@ -91,32 +91,31 @@ if __name__ == '__main__':
             submap_poses = []
             count = 0
             for i in range(0, len(file_names), gap_size):
-                end = i + sub_size
+                end = i + cfgs.frame_winsize
                 if end > len(file_names):
                     continue
                 submap_pc = np.empty((0,0), dtype=float, order='C')
-                submap_pose = poses[i+sub_size//2]
+                submap_pose = poses[i + cfgs.frame_winsize//2]
                 for j in range(i, end):
                     if j < len(file_names):
                         neiscan_pc, neiscan_intensity = load_scans(
                             os.path.join(scans_path, file_names[j]))  # near neighbour scan point clouds
-                        relative_pose = np.linalg.inv(poses[i]).dot(poses[j])
-                        temp_pc_in_center = np.linalg.inv(poses[i]).dot(poses[j]).dot(neiscan_pc.T).T
+                        Rc_T_Rj = np.matmul(np.linalg.inv(poses[i]), poses[j])
+                        temp_pc_in_center = np.matmul(Rc_T_Rj, neiscan_pc.T).T
                         submap_pc = np.concatenate((submap_pc, temp_pc_in_center), axis=0) if submap_pc.size else temp_pc_in_center
 
-                target_submap = random_down_sample(submap_pc[:, :3], target_points)
+                target_submap = random_down_sample(submap_pc[:, :3], cfgs.target_points)
 
-                save_dir = os.path.join(save_path, save_folder, seq, tra)
-                os.makedirs(save_dir, exist_ok=True)
                 with open(os.path.join(save_dir, (str(count).zfill(6) + ".bin")), 'wb') as f:
                     target_submap.tofile(f)
                 submap_poses.append(submap_pose)
                 count += 1
 
-            submaps_poses_path = os.path.join(save_path, save_folder, seq, tra + '_poses.txt')
+            submaps_poses_path = save_dir + '_poses.txt'
             with open(submaps_poses_path, 'w', encoding='utf-8') as f:
                 for pose_id, pose in enumerate(submap_poses):
                     pose_reshape = pose[:3, :4].reshape(1, 12).flatten()
+                    time_i = [str(pose_id).zfill(6)]
                     yaw_i = np.array([yaws[pose_id]])
-                    pose_with_yaw = np.concatenate((pose_reshape, yaw_i))
+                    pose_with_yaw = np.concatenate((time_i, pose_reshape, yaw_i))
                     f.write(' '.join(str(x) for x in pose_with_yaw) + '\n')

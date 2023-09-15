@@ -38,7 +38,7 @@ def evaluate():
 
     model = nn.DataParallel(model)
 
-    print(evaluate_model(model))
+    evaluate_model(model)
 
 
 def evaluate_model(model):
@@ -59,8 +59,6 @@ def evaluate_model(model):
     for set in tqdm(DATABASE_SETS, desc='Computing database embeddings'):
         DATABASE_VEC=get_latent_vectors(model, DATABASE_SETS[set])
         DATABASE_VECTORS.append(DATABASE_VEC)
-        # with open('./log/databases/'+set+'_database.bin', 'wb') as f:
-        #     DATABASE_VEC.tofile(f)
 
     for seq_set in tqdm(QUERY_SETS, desc='Computing query embeddings'):
         QUERY_VEC = get_latent_vectors(model, QUERY_SETS[seq_set])
@@ -161,7 +159,6 @@ def get_recall(m, n, g_key, q_key, database_vectors, query_vectors, query_sets):
 
     num_evaluated = 0
     for i in range(len(queries_output)):
-        # i is query element ndx
         query_details = query_sets[q_key][i]
         true_neighbors = query_details[g_key]
         if len(true_neighbors) == 0:
@@ -202,10 +199,14 @@ if __name__ == "__main__":
                         help='results dir [default: results]')
     parser.add_argument('--dataset_folder', default='../../dataset/',
                         help='PointNetVlad Dataset Folder')
+    parser.add_argument('--NUM_POINTS', type=int, default=512, help='Number of points in a submap [default: 512]')
+    parser.add_argument('--EVAL_DATABASE_FILE', default='generating_queries/radar_split/evaluation_database_test_short.pickle',
+                        help='evaluate database Dataset Folder')
+    parser.add_argument('--EVAL_QUERY_FILE', default='generating_queries/radar_split/evaluation_query_test_short_5m.pickle',
+                        help='evaluate query Dataset Folder')
     FLAGS = parser.parse_args()
 
     cfg.EVAL_BATCH_SIZE = FLAGS.eval_batch_size
-    cfg.NUM_POINTS = 512
     cfg.FEATURE_OUTPUT_DIM = 256
     cfg.EVAL_POSITIVES_PER_QUERY = FLAGS.positives_per_query
     cfg.EVAL_NEGATIVES_PER_QUERY = FLAGS.negatives_per_query
