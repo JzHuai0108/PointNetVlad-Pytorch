@@ -48,7 +48,7 @@ if __name__ == "__main__":
                 group_name = cfgs.groups_name[2]
 
             save_folder = cfgs.train_folder if seq_num < 5 else cfgs.test_folder
-            save_dir = os.path.join(dataset_path, save_folder, group_name, seq_name)
+            save_dir = os.path.join(cfgs.data_path, save_folder, group_name, seq_name)
             os.makedirs(save_dir, exist_ok=True)
 
             gap_size = cfgs.frame_winsize if seq_num in cfgs.test_seqs else cfgs.frame_winsize // 2
