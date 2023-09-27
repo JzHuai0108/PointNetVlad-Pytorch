@@ -69,9 +69,9 @@ if __name__ == "__main__":
     parser.add_argument('--save_name', type=str, default='training_queries_short_radar.pickle',
                         help='saved file name, training_queries_short_radar.pickle/training_queries_long_radar.pickle')
     parser.add_argument('--data_type', type=str, default='train_short', help='train_short or train_long')
-    parser.add_argument('--positive_dist', type=float, default=5, help='Positive sample distance threshold, short:5, long:10')
-    parser.add_argument('--negative_dist', type=float, default=10, help='Negative sample distance threshold, short:9, long:18')
-    parser.add_argument('--yaw_threshold', type=float, default=75, help='Yaw angle threshold')
+    parser.add_argument('--positive_dist', type=float, default=5, help='Positive sample distance threshold, short:5, long:9')
+    parser.add_argument('--negative_dist', type=float, default=10, help='Negative sample distance threshold, short:10, long:18')
+    parser.add_argument('--yaw_threshold', type=float, default=15, help='Yaw angle threshold, 15, 25')
     cfgs = parser.parse_args()
 
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))

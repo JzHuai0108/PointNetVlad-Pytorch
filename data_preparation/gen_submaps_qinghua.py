@@ -20,6 +20,7 @@ def load_qinghua_poses(xyz_path, yaw_path):
         lines_yaw = f.readlines()
         for i in range(len(lines_yaw)):
             yaw = np.fromstring(lines_yaw[i], dtype=np.float32, sep=' ')[0]
+            yaws.append(yaw-180)
             yaw = -(np.pi / 180) * yaw  # 将yaw角度转为弧度
             cos_yaw = np.cos(yaw)
             sin_yaw = np.sin(yaw)
@@ -30,7 +31,6 @@ def load_qinghua_poses(xyz_path, yaw_path):
             pose = np.hstack((rotation_matrix, xyz))  # 将xyz和rotation矩阵按列拼接
             pose = np.vstack((pose, [0, 0, 0, 1]))
             poses.append(pose)
-            yaws.append(yaw)
     return poses, yaws
 
 
@@ -89,6 +89,7 @@ if __name__ == '__main__':
             file_names = sorted(os.listdir(scans_path))
 
             submap_poses = []
+            submap_yaws = []
             count = 0
             for i in range(0, len(file_names), gap_size):
                 end = i + cfgs.frame_winsize
@@ -96,6 +97,7 @@ if __name__ == '__main__':
                     continue
                 submap_pc = np.empty((0,0), dtype=float, order='C')
                 submap_pose = poses[i + cfgs.frame_winsize//2]
+                submap_yaw = yaws[i + cfgs.frame_winsize//2]
                 for j in range(i, end):
                     if j < len(file_names):
                         neiscan_pc, neiscan_intensity = load_scans(
@@ -109,6 +111,7 @@ if __name__ == '__main__':
                 with open(os.path.join(save_dir, (str(count).zfill(6) + ".bin")), 'wb') as f:
                     target_submap.tofile(f)
                 submap_poses.append(submap_pose)
+                submap_yaws.append(submap_yaw)
                 count += 1
 
             submaps_poses_path = save_dir + '_poses.txt'
@@ -116,6 +119,6 @@ if __name__ == '__main__':
                 for pose_id, pose in enumerate(submap_poses):
                     pose_reshape = pose[:3, :4].reshape(1, 12).flatten()
                     time_i = [str(pose_id).zfill(6)]
-                    yaw_i = np.array([yaws[pose_id]])
+                    yaw_i = np.array([submap_yaws[pose_id]])
                     pose_with_yaw = np.concatenate((time_i, pose_reshape, yaw_i))
                     f.write(' '.join(str(x) for x in pose_with_yaw) + '\n')

@@ -27,12 +27,15 @@ if __name__ == '__main__':
     parser.add_argument('--dataset_name', type=str, default='coloradar', help='radar dataset folder')
     parser.add_argument('--data_folder', type=str, default='rosbags', help='radar data folder')
     parser.add_argument('--seqs', type=list,
-                        default=['edgar_classroom_run0', 'edgar_classroom_run1', 'edgar_classroom_run2', 'edgar_classroom_run4', 'edgar_classroom_run5',
-                                 'ec_hallways_run0', 'ec_hallways_run1', 'ec_hallways_run2', 'ec_hallways_run3', 'ec_hallways_run4',
-                                 'outdoors_run0', 'outdoors_run1', 'outdoors_run2', 'outdoors_run3', 'outdoors_run4'],
+                        default=['edgar_classroom_run1', 'edgar_classroom_run2', 'edgar_classroom_run4', 'edgar_classroom_run5',
+                                 'arpg_lab_run0', 'arpg_lab_run1', 'arpg_lab_run2', 'arpg_lab_run3', 'arpg_lab_run4',
+                                 'outdoors_run0', 'outdoors_run1', 'outdoors_run2', 'outdoors_run3', 'outdoors_run4',
+                                 'edgar_army_run0', 'edgar_army_run1', 'edgar_army_run2', 'edgar_army_run3', 'edgar_army_run4', 'edgar_army_run5'],
                         help='the groups name in the dataset')
-    parser.add_argument('--test_query_seqs', type=list, default=['edgar_classroom_run5', 'ec_hallways_run4', 'outdoors_run4'],
-                        help='the groups name in the dataset')
+    parser.add_argument('--test_database_seqs', type=list, default=['edgar_classroom_run4', 'arpg_lab_run3', 'outdoors_run3', 'edgar_army_run4'],
+                        help='the groups name in database_seqs')
+    parser.add_argument('--test_query_seqs', type=list, default=['edgar_classroom_run5', 'arpg_lab_run4', 'outdoors_run4', 'edgar_army_run5'],
+                        help='the groups name in query_seqs')
     parser.add_argument('--train_folder', type=str, default='train_short', help='train submaps saved folder')
     parser.add_argument('--test_folder', type=str, default='test_short', help='test submaps saved folder')
     parser.add_argument('--radar_topic', type=str, default='/mmWaveDataHdl/RScan', help='radar_topic in rosbag')
@@ -48,8 +51,7 @@ if __name__ == '__main__':
 
     for seq in tqdm(cfgs.seqs):
         group_name = seq[:-5]
-        seq_num = int(seq[-1])
-        save_folder = cfgs.train_folder if seq_num < 3 else cfgs.test_folder
+        save_folder = cfgs.train_folder if seq not in cfgs.test_database_seqs and seq not in cfgs.test_query_seqs else cfgs.test_folder
         save_dir = os.path.join(cfgs.data_path, save_folder, group_name, seq)
         os.makedirs(save_dir, exist_ok=True)
 

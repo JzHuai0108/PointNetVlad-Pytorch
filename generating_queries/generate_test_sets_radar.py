@@ -25,6 +25,7 @@ def construct_query_and_database_sets(base_path, data_type, seqs, positive_dist,
     for seq_id, seq in enumerate(tqdm.tqdm(seqs)):
         seq_path = base_path + data_type + '/' + seq
         tras = [name for name in os.listdir(seq_path) if os.path.isdir(os.path.join(seq_path, name))]
+        tras.sort()
         query = {}
         for tra_id in range(len(tras)):
             pose_path = seq_path + '/' + tras[tra_id] + '_poses.txt'
@@ -57,6 +58,7 @@ def construct_query_and_database_sets(base_path, data_type, seqs, positive_dist,
             true_index = [c for c in index if (yaw_diff[c] < cfgs.yaw_threshold) or (yaw_diff[c] > 360 - cfgs.yaw_threshold)]
             query_sets[seq][key][seq] = true_index
 
+    os.makedirs(save_folder, exist_ok=True)
     output_to_file(database_sets, save_folder + 'evaluation_database_' + data_type + '.pickle')
     output_to_file(query_sets, save_folder + 'evaluation_query_' + data_type + '_' + str(positive_dist) + 'm.pickle')
 
@@ -68,16 +70,16 @@ if __name__ == '__main__':
     parser.add_argument('--save_folder', type=str, default='./radar_split/', help='the saved path of split file ')
     parser.add_argument('--data_type', type=str, default='test_short', help='test_short or test_long')
     parser.add_argument('--positive_dist', type=float, default=5,
-                        help='Positive sample distance threshold, short:5, long:10')
+                        help='Positive sample distance threshold, short:5, long:9')
     parser.add_argument('--yaw_threshold', type=float, default=75, help='Yaw angle threshold')
     cfgs = parser.parse_args()
 
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
     if cfgs.data_type == "test_short":
-        seqs = ['ec_hallways', 'edgar_classroom', 'outdoors', 'seq3', 'seq4']
+        seqs = ['edgar_classroom', 'arpg_lab', 'outdoors', 'edgar_army', 'seq3', 'seq4']
     else:
-        seqs = ['RURAL_C', 'xinbu']
+        seqs = ['RURAL_E', 'xinbu']
 
     construct_query_and_database_sets(cfgs.data_path, cfgs.data_type, seqs, cfgs.positive_dist, cfgs.save_folder)
 
